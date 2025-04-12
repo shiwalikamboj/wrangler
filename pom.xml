@@ -86,11 +86,11 @@
     <cdap.version>6.11.0</cdap.version>
     <chlorine.version>1.1.5</chlorine.version>
     <commons.validator.version>1.6</commons.validator.version>
-    <commons-io.version>2.5</commons-io.version>
+    <commons-io.version>2.11.0</commons-io.version>
     <commons-csv.version>1.4</commons-csv.version>
     <commons-jexl.version>3.0</commons-jexl.version>
     <commons-lang.version>2.6</commons-lang.version>
-    <commons-lang3.version>3.5</commons-lang3.version>
+    <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
     <geogson.version>1.1.97</geogson.version>
     <google.cloud.bigquery.version>1.110.1</google.cloud.bigquery.version>
@@ -98,29 +98,31 @@
     <google.findbugs.version>2.0.1</google.findbugs.version>
     <google.http.client.version>1.22.0</google.http.client.version>
     <google.storage.version>1.106.0</google.storage.version>
-    <gson.version>2.6.2</gson.version>
+    <gson.version>2.8.9</gson.version>
     <guava.retrying.version>2.0.0</guava.retrying.version>
-    <guava.version>31.0.1-jre</guava.version>
+    <guava.version>32.1.2-jre</guava.version>
     <hadoop.version>2.4.0</hadoop.version>
     <hl7.version>2.2</hl7.version>
     <hsql.version>2.2.4</hsql.version>
-    <httpclient.version>4.5.3</httpclient.version>
+    <httpclient.version>4.5.14</httpclient.version>
     <httpdlog-parser.version>3.0</httpdlog-parser.version>
     <joda-time.version>2.9.7</joda-time.version>
     <json-path.version>2.2.0</json-path.version>
-    <junit.version>4.12</junit.version>
+    <junit.version>4.13.2</junit.version>
     <juniversalchardet.version>1.0.3</juniversalchardet.version>
     <kafka.clients.version>0.10.2.1</kafka.clients.version>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
     <natty.version>0.13</natty.version>
     <netty-http.version>1.3.0</netty-http.version>
-    <netty.version>4.1.75.Final</netty.version>
+    <netty.version>4.1.100.Final</netty.version>
     <javax.ws.rs-api.version>2.0</javax.ws.rs-api.version>
-    <poi.version>3.16</poi.version>
+    <poi.version>4.1.2</poi.version>
     <protobuf.version>3.11.3</protobuf.version>
     <reflections.version>0.9.9</reflections.version>
     <simmetrics.version>4.1.1</simmetrics.version>
     <simplemagic.version>1.11</simplemagic.version>
-    <slf4j.version>1.7.15</slf4j.version>
+    <slf4j.version>1.7.36</slf4j.version>
     <unix4j.version>0.4</unix4j.version>
     <testSourceLocation>${project.basedir}/src/test/java/</testSourceLocation>
   </properties>
@@ -176,31 +178,103 @@
     <testSourceDirectory>${testSourceLocation}</testSourceDirectory>
     <pluginManagement>
       <plugins>
+              <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <source>11</source>
+          <target>11</target>
+          <compilerArgs>
+            <arg>--add-exports</arg>
+            <arg>java.base/sun.nio.ch=ALL-UNNAMED</arg>
+            <arg>--add-opens</arg>
+            <arg>java.base/java.lang=ALL-UNNAMED</arg>
+            <arg>--add-opens</arg>
+            <arg>java.base/java.util=ALL-UNNAMED</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.13.0</version>
-          <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
-          </configuration>
-        </plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+         <argLine>
+              --add-modules ALL-SYSTEM
+              --add-exports java.base/sun.nio.ch=ALL-UNNAMED
+              --add-exports java.management/sun.management=ALL-UNNAMED
+              --add-exports jdk.unsupported/sun.misc=ALL-UNNAMED
+              --add-opens java.base/java.lang=ALL-UNNAMED
+              --add-opens java.base/java.util=ALL-UNNAMED
+              --add-opens java.base/java.io=ALL-UNNAMED
+              --add-opens java.base/java.time=ALL-UNNAMED
+              --add-opens java.base/java.net=ALL-UNNAMED
+              --add-opens java.sql/java.sql=ALL-UNNAMED
+              --add-opens java.base/java.nio=ALL-UNNAMED
+              --add-opens java.base/java.text=ALL-UNNAMED
+              --add-modules java.sql
+
+              -Xmx2048m
+              -XX:+UseG1GC
+              -XX:+HeapDumpOnOutOfMemoryError
+              -XX:HeapDumpPath=${project.build.directory}/heapdump.hprof
+              -XX:+ExitOnOutOfMemoryError
+              -XX:+CrashOnOutOfMemoryError
+            </argLine>
+          <useSystemClassLoader>false</useSystemClassLoader>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
+          <trimStackTrace>false</trimStackTrace>
+          <testFailureIgnore>true</testFailureIgnore>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
+          <runOrder>alphabetical</runOrder>
+          <reportFormat>plain</reportFormat>
+          <disableXmlReport>false</disableXmlReport>
+          <useFile>false</useFile>
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
+          <systemPropertyVariables>
+            <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
           <artifactId>maven-bundle-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>5.1.9</version>
           <extensions>true</extensions>
           <configuration>
             <instructions>
+              <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+              <Bundle-Name>${project.name}</Bundle-Name>
+              <Bundle-Version>${project.version}</Bundle-Version>
+              <Bundle-DocURL>${project.url}</Bundle-DocURL>
               <Embed-Dependency>*;inline=false;scope=compile</Embed-Dependency>
               <Embed-Transitive>true</Embed-Transitive>
               <Embed-Directory>lib</Embed-Directory>
-              <!--Only @Plugin classes in the export packages will be included as plugin-->
               <_exportcontents>io.cdap.wrangler.*</_exportcontents>
+              <Import-Package>
+                !sun.misc,
+                !javax.annotation,
+                *
+              </Import-Package>
+              <_failok>true</_failok>
+              <_nouses>true</_nouses>
+              <_nodefaultversion>true</_nodefaultversion>
             </instructions>
           </configuration>
           <executions>
             <execution>
+              <id>bundle-manifest</id>
+              <phase>process-classes</phase>
+              <goals>
+                <goal>manifest</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>bundle-package</id>
               <phase>package</phase>
               <goals>
                 <goal>bundle</goal>
@@ -211,82 +285,17 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
-          <version>1.7</version>
+          <version>3.1.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
           <version>0.10</version>
-          <executions>
-            <execution>
-              <id>rat-check</id>
-              <phase>validate</phase>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <configuration>
-                <excludes>
-                  <exclude>cov-int/**</exclude>
-                  <exclude>*.md</exclude>
-                  <exclude>**/*.md</exclude>
-                  <exclude>**/*.json</exclude>
-                  <exclude>**/resources/**</exclude>
-                  <exclude>wrangler-demos/**</exclude>
-                  <exclude>**/com/example/**</exclude>
-                  <exclude>/**/icons/**</exclude>
-                </excludes>
-              </configuration>
-            </execution>
-          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>2.17</version>
-          <executions>
-            <execution>
-              <id>validate</id>
-              <phase>process-test-classes</phase>
-              <configuration>
-                <configLocation>checkstyle.xml</configLocation>
-                <suppressionsLocation>suppressions.xml</suppressionsLocation>
-                <encoding>UTF-8</encoding>
-                <consoleOutput>true</consoleOutput>
-                <failsOnError>true</failsOnError>
-                <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                <!--
-                  excludes don't apply to the target directory, so need to specify this to
-                  avoid checking generated antlr code
-                -->
-                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                <!--
-                  functions has some user visible functions that we can't change without breaking
-                  compatibility.
-
-                  tutorial has some proto code that doesn't need to be enforced.
-
-                  MigrateToV2 has a gigantic method that can't be broken down without a lot of
-                  refactoring. Migration logic should be handled by each individual directive,
-                  not by some central class that somehow understands all directives.
-                 -->
-                <excludes>
-                  **/io/cdap/functions/**,
-                  **/com/example/tutorial/**,
-                  **/io/cdap/wrangler/parser/MigrateToV2.java
-                </excludes>
-              </configuration>
-              <goals>
-                <goal>check</goal>
-              </goals>
-            </execution>
-          </executions>
-          <dependencies>
-            <dependency>
-              <groupId>com.puppycrawl.tools</groupId>
-              <artifactId>checkstyle</artifactId>
-              <version>6.19</version>
-            </dependency>
-          </dependencies>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -295,12 +304,51 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.13.0</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.14.1</version>
+        <version>3.2.5</version>
+        <configuration>
+         <argLine>
+              --add-modules ALL-SYSTEM
+              --add-exports java.base/sun.nio.ch=ALL-UNNAMED
+              --add-exports java.management/sun.management=ALL-UNNAMED
+              --add-exports jdk.unsupported/sun.misc=ALL-UNNAMED
+              --add-opens java.base/java.lang=ALL-UNNAMED
+              --add-opens java.base/java.util=ALL-UNNAMED
+              --add-opens java.base/java.io=ALL-UNNAMED
+              --add-opens java.base/java.time=ALL-UNNAMED
+              --add-opens java.base/java.net=ALL-UNNAMED
+              --add-opens java.sql/java.sql=ALL-UNNAMED
+              --add-opens java.base/java.nio=ALL-UNNAMED
+              --add-opens java.base/java.text=ALL-UNNAMED
+              --add-modules java.sql
+
+              -Xmx2048m
+              -XX:+UseG1GC
+              -XX:+HeapDumpOnOutOfMemoryError
+              -XX:HeapDumpPath=${project.build.directory}/heapdump.hprof
+              -XX:+ExitOnOutOfMemoryError
+              -XX:+CrashOnOutOfMemoryError
+            </argLine>
+          <useSystemClassLoader>false</useSystemClassLoader>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
+          <trimStackTrace>false</trimStackTrace>
+          <testFailureIgnore>true</testFailureIgnore>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
+          <runOrder>alphabetical</runOrder>
+          <reportFormat>plain</reportFormat>
+          <disableXmlReport>false</disableXmlReport>
+          <useFile>false</useFile>
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
+          <systemPropertyVariables>
+            <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -317,13 +365,11 @@
     </plugins>
   </build>
 
-   <!-- Profile for release. Includes signing of jars. -->
   <profiles>
     <profile>
       <id>release</id>
       <build>
         <plugins>
-          <!-- Source JAR -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
@@ -341,8 +387,6 @@
               </execution>
             </executions>
           </plugin>
-
-          <!-- Javadoc jar -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -351,7 +395,7 @@
               <additionalparam>-Xdoclint:none</additionalparam>
               <failOnError>false</failOnError>
               <links>
-                <link>http://download.oracle.com/javase/${jee.version}/docs/api/</link>
+                <link>http://download.oracle.com/javase/8/docs/api/</link>
               </links>
               <doctitle>${project.name} ${project.version}</doctitle>
               <bottom>
@@ -368,7 +412,6 @@
               </execution>
             </executions>
           </plugin>
-
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
@@ -385,7 +428,6 @@
               </execution>
             </executions>
           </plugin>
-
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-release-plugin</artifactId>
@@ -394,8 +436,6 @@
               <tag>v${releaseVersion}</tag>
               <tagNameFormat>v@{project.version}</tagNameFormat>
               <autoVersionSubmodules>true</autoVersionSubmodules>
-              <!-- releaseProfiles configuration will actually force a Maven profile
-                – the `releases` profile – to become active during the Release process. -->
               <releaseProfiles>releases</releaseProfiles>
             </configuration>
           </plugin>
@@ -423,8 +463,23 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <useFile>false</useFile>
-              <redirectTestOutputToFile>false</redirectTestOutputToFile>
+              <argLine>
+                --add-modules java.sql
+                --add-opens java.base/java.lang=ALL-UNNAMED
+                --add-opens java.base/java.util=ALL-UNNAMED
+                --add-opens java.base/java.io=ALL-UNNAMED
+                --add-opens java.base/java.time=ALL-UNNAMED
+                --add-opens java.base/java.net=ALL-UNNAMED
+                --add-opens java.sql/java.sql=ALL-UNNAMED
+                --add-opens java.base/java.nio=ALL-UNNAMED
+                --add-opens java.base/java.text=ALL-UNNAMED
+                -Xmx2048m
+                -XX:+UseG1GC
+                -XX:+HeapDumpOnOutOfMemoryError
+                -XX:HeapDumpPath=${project.build.directory}/heapdump.hprof
+                -XX:+ExitOnOutOfMemoryError
+                -XX:+CrashOnOutOfMemoryError
+              </argLine>
             </configuration>
           </plugin>
         </plugins>
@@ -446,33 +501,55 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.18.1</version>
             <configuration>
               <skipTests>true</skipTests>
             </configuration>
           </plugin>
-
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.0.0</version>
+            <version>3.2.5</version>
             <dependencies>
               <dependency>
                 <groupId>org.apache.maven.surefire</groupId>
                 <artifactId>surefire-junit47</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.5</version>
               </dependency>
+               <dependency>
+      <groupId>org.junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cdap.wrangler</groupId>
+      <artifactId>wrangler-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
             </dependencies>
             <configuration>
+              <argLine>
+                --add-modules java.sql
+                --add-opens java.base/java.lang=ALL-UNNAMED
+                --add-opens java.base/java.util=ALL-UNNAMED
+                --add-opens java.base/java.io=ALL-UNNAMED
+                --add-opens java.base/java.time=ALL-UNNAMED
+                --add-opens java.base/java.net=ALL-UNNAMED
+                --add-opens java.sql/java.sql=ALL-UNNAMED
+                --add-opens java.base/java.nio=ALL-UNNAMED
+                --add-opens java.base/java.text=ALL-UNNAMED
+                -Xmx2048m
+                -XX:+UseG1GC
+                -XX:+HeapDumpOnOutOfMemoryError
+              </argLine>
               <includes>
                 <include>${TEST_RUNNER}</include>
               </includes>
-              <!--Start configuration to run TestRunners in parallel-->
-              <parallel>classes</parallel> <!--Running TestRunner classes in parallel-->
-              <threadCount>2</threadCount> <!--Number of classes to run in parallel-->
-              <forkCount>2</forkCount> <!--Number of JVM processes -->
+              <parallel>classes</parallel>
+              <threadCount>2</threadCount>
+              <forkCount>2</forkCount>
               <reuseForks>true</reuseForks>
-              <!--End configuration to run TestRunners in parallel-->
               <environmentVariables>
                 <GOOGLE_APPLICATION_CREDENTIALS>
                   ${GOOGLE_APPLICATION_CREDENTIALS}
@@ -492,17 +569,14 @@
               <execution>
                 <goals>
                   <goal>integration-test</goal>
-<!--                  <goal>verify</goal>-->
                 </goals>
               </execution>
             </executions>
           </plugin>
-
           <plugin>
             <groupId>net.masterthought</groupId>
             <artifactId>maven-cucumber-reporting</artifactId>
             <version>5.5.0</version>
-
             <executions>
               <execution>
                 <id>execution</id>
@@ -511,14 +585,14 @@
                   <goal>generate</goal>
                 </goals>
                 <configuration>
-                  <projectName>Cucumber Reports</projectName> <!-- Replace with project name -->
+                  <projectName>Cucumber Reports</projectName>
                   <outputDirectory>target/cucumber-reports/advanced-reports</outputDirectory>
                   <buildNumber>1</buildNumber>
                   <skip>false</skip>
                   <inputDirectory>${project.build.directory}/cucumber-reports</inputDirectory>
-                  <jsonFiles> <!-- supports wildcard or name pattern -->
+                  <jsonFiles>
                     <param>**/*.json</param>
-                  </jsonFiles> <!-- optional, defaults to outputDirectory if not specified -->
+                  </jsonFiles>
                   <classificationDirectory>${project.build.directory}/cucumber-reports</classificationDirectory>
                   <checkBuildResult>true</checkBuildResult>
                 </configuration>
@@ -536,29 +610,25 @@
           </dependency>
         </dependencies>
       </dependencyManagement>
-
       <dependencies>
         <dependency>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
-          <version>1.7.15</version>
+          <version>1.7.36</version>
         </dependency>
-
         <dependency>
           <groupId>io.cdap.tests.e2e</groupId>
           <artifactId>cdap-e2e-framework</artifactId>
           <version>0.5.0-SNAPSHOT</version>
           <scope>test</scope>
         </dependency>
-
         <dependency>
           <groupId>ch.qos.logback</groupId>
           <artifactId>logback-classic</artifactId>
-          <version>1.2.8</version>
+          <version>1.2.11</version>
           <scope>runtime</scope>
         </dependency>
       </dependencies>
-
     </profile>
   </profiles>
 </project>
